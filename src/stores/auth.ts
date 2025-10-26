@@ -28,12 +28,20 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = null;
       
       const response = await authService.login(credentials);
-      user.value = response.user;
-      token.value = response.token;
       
-      return response;
+      // Make sure we have the required data
+      if (response && response.token) {
+        user.value = response.user;
+        token.value = response.token;
+        error.value = null; // Clear any previous errors
+        return response;
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Login failed';
+      const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+      error.value = errorMessage;
+      console.error('Login error:', err);
       throw err;
     } finally {
       isLoading.value = false;

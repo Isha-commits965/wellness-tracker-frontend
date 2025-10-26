@@ -87,11 +87,6 @@ const props = withDefaults(defineProps<Props>(), {
   data: () => ({})
 })
 
-defineEmits<{
-  'date-selected': [date: Date]
-  'month-changed': [date: Date]
-}>()
-
 const currentDate = ref(new Date())
 const selectedDate = ref(props.selectedDate)
 

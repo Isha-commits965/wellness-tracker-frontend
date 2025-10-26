@@ -56,10 +56,6 @@ const props = withDefaults(defineProps<Props>(), {
   clickable: false
 })
 
-defineEmits<{
-  click: []
-}>()
-
 const formattedValue = computed(() => {
   if (typeof props.value === 'number') {
     return props.value.toLocaleString()

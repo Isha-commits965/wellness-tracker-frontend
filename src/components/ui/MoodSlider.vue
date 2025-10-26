@@ -73,11 +73,6 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'mood'
 })
 
-defineEmits<{
-  'update:modelValue': [value: number]
-  change: [value: number]
-}>()
-
 const inputId = computed(() => `slider-${Math.random().toString(36).substr(2, 9)}`)
 
 const sliderClasses = computed(() => {
