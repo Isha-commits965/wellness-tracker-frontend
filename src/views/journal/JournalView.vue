@@ -1,17 +1,28 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">AI Journal</h1>
-        <p class="mt-1 text-sm text-gray-500">Reflect on your day with AI-powered insights</p>
+    <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-8 text-white relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-pink-600/20"></div>
+      <div class="relative z-10 flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-bold mb-2 animate-pulse-slow">AI Journal 📝</h1>
+          <p class="text-xl text-white/90">Reflect on your day with AI-powered insights</p>
+          <div class="mt-4 flex items-center space-x-2">
+            <div class="w-3 h-3 bg-yellow-300 rounded-full animate-bounce-slow"></div>
+            <div class="w-3 h-3 bg-green-300 rounded-full animate-bounce-slow" style="animation-delay: 0.2s"></div>
+            <div class="w-3 h-3 bg-blue-300 rounded-full animate-bounce-slow" style="animation-delay: 0.4s"></div>
+          </div>
+        </div>
+        <BaseButton 
+          @click="showCreateModal = true"
+          class="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 backdrop-blur-sm"
+        >
+          <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          New Entry
+        </BaseButton>
       </div>
-      <BaseButton @click="showCreateModal = true">
-        <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-        New Entry
-      </BaseButton>
     </div>
 
     <!-- Journal entries -->
@@ -20,56 +31,67 @@
         <BaseLoading type="spinner" text="Loading journal entries..." />
       </div>
       
-      <div v-else-if="journalStore.entries.length === 0" class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No journal entries yet</h3>
-        <p class="mt-1 text-sm text-gray-500">Start your wellness journey by writing your first entry.</p>
-        <BaseButton @click="showCreateModal = true" class="mt-4">
-          Write your first entry
-        </BaseButton>
+      <div v-else-if="journalStore.entries.length === 0" class="text-center py-16">
+        <div class="bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl p-12 max-w-md mx-auto">
+          <div class="text-8xl mb-6 animate-bounce-slow">📝</div>
+          <h3 class="text-2xl font-bold text-gradient mb-4">No journal entries yet</h3>
+          <p class="text-lg text-gray-600 mb-8">Start your wellness journey by writing your first entry.</p>
+          <BaseButton 
+            @click="showCreateModal = true" 
+            class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
+            ✨ Write your first entry ✨
+          </BaseButton>
+        </div>
       </div>
       
       <div v-else class="space-y-4">
         <div
           v-for="entry in validEntries"
           :key="entry.id"
-          class="card hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          class="card hover:shadow-xl transition-all duration-300 cursor-pointer group"
           @click="viewEntry(entry)"
         >
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <h3 class="text-lg font-semibold text-gray-900">
-                {{ new Date(entry.createdAt).toLocaleDateString() }}
-              </h3>
-              <p class="mt-2 text-sm text-gray-600 line-clamp-3">
+              <div class="flex items-center space-x-3 mb-3">
+                <h3 class="text-xl font-bold text-gradient">
+                  {{ new Date(entry.createdAt).toLocaleDateString() }}
+                </h3>
+                <div class="flex space-x-1">
+                  <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse-slow"></div>
+                  <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse-slow" style="animation-delay: 0.2s"></div>
+                  <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse-slow" style="animation-delay: 0.4s"></div>
+                </div>
+              </div>
+              <p class="text-gray-700 line-clamp-3 leading-relaxed">
                 {{ entry.content }}
               </p>
-              <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
-                <span>Mood: {{ entry.moodBefore }} → {{ entry.moodAfter }}</span>
-                <span v-if="entry.aiResponse" class="flex items-center">
-                  <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                  </svg>
-                  AI Response
-                </span>
+              <div class="mt-4 flex items-center space-x-6 text-sm">
+                <div class="flex items-center space-x-2 bg-gradient-to-r from-yellow-100 to-orange-100 px-3 py-2 rounded-full">
+                  <span class="text-lg">😊</span>
+                  <span class="font-semibold text-orange-700">Mood: {{ entry.moodBefore }} → {{ entry.moodAfter }}</span>
+                </div>
+                <div v-if="entry.aiResponse" class="flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-purple-100 px-3 py-2 rounded-full">
+                  <span class="text-lg">🤖</span>
+                  <span class="font-semibold text-blue-700">AI Response</span>
+                </div>
               </div>
             </div>
             <div class="flex items-center space-x-2">
               <button
                 @click.stop="editEntry(entry)"
-                class="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                class="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-all duration-200 hover:scale-110"
               >
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
               <button
                 @click.stop="deleteEntry(entry.id)"
-                class="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                class="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50 transition-all duration-200 hover:scale-110"
               >
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>

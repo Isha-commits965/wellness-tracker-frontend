@@ -3,11 +3,11 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Mood Tracking</h1>
-        <p class="mt-1 text-sm text-gray-500">Track your daily mood, energy, and stress levels</p>
+        <h1 class="text-4xl font-bold text-gradient mb-2">Mood Tracking 🌈</h1>
+        <p class="text-lg text-gray-700 font-medium">Track your daily mood, energy, and stress levels</p>
       </div>
-      <BaseButton @click="showMoodModal = true">
-        <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <BaseButton @click="showMoodModal = true" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
         Log Mood
@@ -16,62 +16,71 @@
 
     <!-- Today's mood -->
     <div v-if="moodsStore.todayMood" class="card">
-      <h3 class="text-lg font-semibold mb-6" style="color: #f8f8f8;">Today's Mood Summary</h3>
+      <h3 class="text-2xl font-bold text-gradient mb-8 text-center">Today's Mood Summary ✨</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="text-center p-4 bg-white bg-opacity-10 rounded-lg">
-          <p class="text-sm font-medium mb-2" style="color: #f8f8f8;">😊 How are you feeling mood-wise?</p>
-          <div class="text-4xl mb-2">{{ moodsStore.getMoodEmoji(moodsStore.todayMood.mood) }}</div>
-          <p class="text-xl font-semibold" style="color: #f8f8f8;">
+        <div class="text-center p-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg hover:scale-105 transition-all duration-300">
+          <p class="text-sm font-semibold mb-3 text-white uppercase tracking-wide">😊 Mood</p>
+          <div class="text-6xl mb-3 animate-bounce-slow">{{ moodsStore.getMoodEmoji(moodsStore.todayMood.mood) }}</div>
+          <p class="text-2xl font-bold text-white">
             {{ moodsStore.todayMood.mood }}/10
           </p>
         </div>
-        <div class="text-center p-4 bg-white bg-opacity-10 rounded-lg">
-          <p class="text-sm font-medium mb-2" style="color: #f8f8f8;">⚡ How energetic are you?</p>
-          <div class="text-4xl mb-2">⚡</div>
-          <p class="text-xl font-semibold" style="color: #f8f8f8;">{{ moodsStore.todayMood.energy }}/10</p>
+        <div class="text-center p-6 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl shadow-lg hover:scale-105 transition-all duration-300">
+          <p class="text-sm font-semibold mb-3 text-white uppercase tracking-wide">⚡ Energy</p>
+          <div class="text-6xl mb-3 animate-pulse-slow">⚡</div>
+          <p class="text-2xl font-bold text-white">{{ moodsStore.todayMood.energy }}/10</p>
         </div>
-        <div class="text-center p-4 bg-white bg-opacity-10 rounded-lg">
-          <p class="text-sm font-medium mb-2" style="color: #f8f8f8;">😰 How stressed do you feel?</p>
-          <div class="text-4xl mb-2">😰</div>
-          <p class="text-xl font-semibold" style="color: #f8f8f8;">{{ moodsStore.todayMood.stress }}/10</p>
+        <div class="text-center p-6 bg-gradient-to-br from-red-400 to-pink-500 rounded-2xl shadow-lg hover:scale-105 transition-all duration-300">
+          <p class="text-sm font-semibold mb-3 text-white uppercase tracking-wide">😰 Stress</p>
+          <div class="text-6xl mb-3 animate-pulse-slow">😰</div>
+          <p class="text-2xl font-bold text-white">{{ moodsStore.todayMood.stress }}/10</p>
         </div>
       </div>
-      <div v-if="moodsStore.todayMood.notes" class="mt-4 p-3 bg-white bg-opacity-10 rounded-lg">
-        <p class="text-sm font-medium mb-1" style="color: #f8f8f8;">Notes:</p>
-        <p class="text-sm" style="color: #e0e0e0;">{{ moodsStore.todayMood.notes }}</p>
+      <div v-if="moodsStore.todayMood.notes" class="mt-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border-l-4 border-purple-500">
+        <p class="text-sm font-semibold mb-2 text-purple-800">📝 Notes:</p>
+        <p class="text-sm text-purple-700">{{ moodsStore.todayMood.notes }}</p>
       </div>
     </div>
 
     <!-- Quick mood logging -->
     <div v-else class="card">
-      <h3 class="text-lg font-semibold mb-6" style="color: #f8f8f8;">How are you feeling today?</h3>
+      <h3 class="text-2xl font-bold text-gradient mb-8 text-center">How are you feeling today? 🌟</h3>
       <div class="space-y-8">
-        <div>
-          <h4 class="text-sm font-medium mb-3" style="color: #f8f8f8;">😊 How are you feeling mood-wise?</h4>
+        <div class="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200">
+          <h4 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <span class="text-2xl mr-2">😊</span>
+            How are you feeling mood-wise?
+          </h4>
           <MoodSlider
             v-model="quickMood.mood"
             type="mood"
           />
         </div>
         
-        <div>
-          <h4 class="text-sm font-medium mb-3" style="color: #f8f8f8;">⚡ How energetic are you?</h4>
+        <div class="p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl border border-blue-200">
+          <h4 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <span class="text-2xl mr-2">⚡</span>
+            How energetic are you?
+          </h4>
           <MoodSlider
             v-model="quickMood.energy"
             type="energy"
           />
         </div>
         
-        <div>
-          <h4 class="text-sm font-medium mb-3" style="color: #f8f8f8;">😰 How stressed do you feel?</h4>
+        <div class="p-6 bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl border border-red-200">
+          <h4 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <span class="text-2xl mr-2">😰</span>
+            How stressed do you feel?
+          </h4>
           <MoodSlider
             v-model="quickMood.stress"
             type="stress"
           />
         </div>
         
-        <div>
-          <label class="label">Notes (Optional)</label>
+        <div class="p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-200">
+          <label class="label text-purple-800">📝 Notes (Optional)</label>
           <textarea
             v-model="quickMood.notes"
             class="input-field"
@@ -83,16 +92,16 @@
         <BaseButton
           @click="logMood"
           :loading="isLoggingMood"
-          class="w-full"
+          class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
         >
-          Log Mood
+          <span class="text-lg">✨ Log Mood ✨</span>
         </BaseButton>
       </div>
     </div>
 
     <!-- Mood history -->
     <div class="card">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Mood Entries</h3>
+      <h3 class="text-2xl font-bold text-gradient mb-6 text-center">Recent Mood Entries 📊</h3>
       
       <div v-if="moodsStore.isLoading" class="text-center py-8">
         <BaseLoading type="spinner" text="Loading mood history..." />
@@ -106,27 +115,35 @@
         <p class="mt-1 text-sm text-gray-500">Start tracking your mood to see your patterns.</p>
       </div>
       
-      <div v-else class="space-y-3">
+      <div v-else class="space-y-4">
         <div
           v-for="entry in validMoodEntries.slice(0, 10)"
           :key="entry.id"
-          class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+          class="flex items-center justify-between p-6 bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-purple-300"
         >
-          <div class="flex items-center space-x-4">
-            <div class="text-2xl">{{ moodsStore.getMoodEmoji(entry.mood) }}</div>
+          <div class="flex items-center space-x-6">
+            <div class="text-4xl animate-bounce-slow">{{ moodsStore.getMoodEmoji(entry.mood) }}</div>
             <div>
-              <p class="text-sm font-medium text-gray-900">
+              <p class="text-lg font-semibold text-gray-800">
                 {{ new Date(entry.date).toLocaleDateString() }}
               </p>
-              <p class="text-xs text-gray-500">
-                Mood: {{ entry.mood }}/10 • Energy: {{ entry.energy }}/10 • Stress: {{ entry.stress }}/10
-              </p>
+              <div class="flex items-center space-x-4 mt-2">
+                <span class="text-sm font-medium text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">
+                  😊 Mood: {{ entry.mood }}/10
+                </span>
+                <span class="text-sm font-medium text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                  ⚡ Energy: {{ entry.energy }}/10
+                </span>
+                <span class="text-sm font-medium text-red-600 bg-red-100 px-3 py-1 rounded-full">
+                  😰 Stress: {{ entry.stress }}/10
+                </span>
+              </div>
             </div>
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-3">
             <button
               @click="editMood(entry)"
-              class="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
+              class="p-3 text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
             >
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -134,7 +151,7 @@
             </button>
             <button
               @click="deleteMood(entry.id)"
-              class="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+              class="p-3 text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
             >
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

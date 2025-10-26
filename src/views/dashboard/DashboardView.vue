@@ -1,9 +1,17 @@
 <template>
   <div class="space-y-6">
     <!-- Welcome section -->
-    <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white">
-      <h1 class="text-2xl font-bold">Welcome back, {{ user?.fullName }}! 👋</h1>
-      <p class="mt-2 text-primary-100">Ready to continue your wellness journey?</p>
+    <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl p-8 text-white relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20"></div>
+      <div class="relative z-10">
+        <h1 class="text-4xl font-bold mb-2 animate-pulse-slow">Welcome back, {{ user?.fullName }}! 👋</h1>
+        <p class="text-xl text-white/90">Ready to continue your wellness journey?</p>
+        <div class="mt-4 flex items-center space-x-2">
+          <div class="w-3 h-3 bg-yellow-400 rounded-full animate-bounce-slow"></div>
+          <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce-slow" style="animation-delay: 0.2s"></div>
+          <div class="w-3 h-3 bg-blue-400 rounded-full animate-bounce-slow" style="animation-delay: 0.4s"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Quick stats -->
@@ -194,25 +202,33 @@
       <!-- Calendar widget -->
       <CalendarWidget
         :data="calendarData"
+        :streakDates="habitsStore.completedDates"
         @date-selected="handleDateSelected"
         @month-changed="handleMonthChanged"
       />
     </div>
 
-    <!-- Weekly mood chart -->
-    <BaseCard>
-      <template #header>
-        <h3 class="text-lg font-semibold text-gray-900">Weekly Mood Trend</h3>
-      </template>
-      
-      <div class="h-64">
-        <!-- Chart will be implemented here -->
-        <div class="flex items-center justify-center h-full text-gray-500">
-          <p>Mood chart will be displayed here</p>
-        </div>
-      </div>
-    </BaseCard>
   </div>
+  
+    <!-- Badge Popup -->
+    <BadgePopup
+      :isOpen="badgeStore.showBadgePopup"
+      :badge="badgeStore.newBadge"
+      :streak="habitsStore.currentStreak"
+      @close="badgeStore.closeBadgePopup"
+      @viewAll="badgeStore.viewAllBadges"
+    />
+    
+    <!-- Test Badge Button (for development) -->
+    <div v-if="isDevelopment" class="fixed bottom-4 right-4 z-50">
+      <BaseButton 
+        @click="testBadge" 
+        variant="primary"
+        class="shadow-lg"
+      >
+        Test Badge 🏆
+      </BaseButton>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -222,17 +238,20 @@ import { useHabitsStore } from '@/stores/habits'
 import { useMoodsStore } from '@/stores/moods'
 import { useJournalStore } from '@/stores/journal'
 import { useAnalyticsStore } from '@/stores/analytics'
+import { useBadgeStore } from '@/stores/badges'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import StatsCard from '@/components/ui/StatsCard.vue'
 import MoodSlider from '@/components/ui/MoodSlider.vue'
 import CalendarWidget from '@/components/ui/CalendarWidget.vue'
+import BadgePopup from '@/components/ui/BadgePopup.vue'
 
 const authStore = useAuthStore()
 const habitsStore = useHabitsStore()
 const moodsStore = useMoodsStore()
 const journalStore = useJournalStore()
 const analyticsStore = useAnalyticsStore()
+const badgeStore = useBadgeStore()
 
 const quickMood = ref({
   mood: 5,
@@ -246,39 +265,12 @@ const user = computed(() => authStore.user)
 const activeHabits = computed(() => habitsStore.activeHabits)
 const todayMood = computed(() => moodsStore.todayMood)
 const calendarData = computed(() => analyticsStore.monthlyCalendarData)
+const isDevelopment = computed(() => import.meta.env.DEV)
 
 // Calculate real dashboard stats from store data
 const dashboardStats = computed(() => {
-  // Calculate current streak based on mood entries
-  let currentStreak = 0
-  if (moodsStore.moodEntries && moodsStore.moodEntries.length > 0) {
-    const sortedEntries = [...moodsStore.moodEntries].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    )
-    
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    // Check if there's an entry today
-    const todayStr = today.toISOString().split('T')[0]
-    const hasToday = sortedEntries.some(e => e.date === todayStr)
-    
-    if (hasToday) {
-      currentStreak = 1
-      // Count consecutive days backwards
-      for (let i = 1; i < 365; i++) {
-        const checkDate = new Date(today)
-        checkDate.setDate(checkDate.getDate() - i)
-        const checkDateStr = checkDate.toISOString().split('T')[0]
-        
-        if (sortedEntries.some(e => e.date === checkDateStr)) {
-          currentStreak++
-        } else {
-          break
-        }
-      }
-    }
-  }
+  // Use streak data from habits store
+  const currentStreak = habitsStore.currentStreak
   
   // Calculate journal entries this week
   const oneWeekAgo = new Date()
@@ -300,14 +292,23 @@ const recentActivity = computed(() => {
   return []
 })
 
+
 onMounted(async () => {
   try {
     await Promise.all([
       habitsStore.fetchHabits(),
       habitsStore.fetchCheckIns(),
       moodsStore.fetchMoodEntries(),
-      journalStore.fetchJournalEntries()
+      journalStore.fetchJournalEntries(),
+      badgeStore.loadBadges()
     ])
+    
+    // Check for new badge achievements
+    const streak = habitsStore.currentStreak
+    const moodDays = moodsStore.moodEntries?.length || 0
+    const journalDays = journalStore.entries?.length || 0
+    
+    badgeStore.checkForNewBadges(streak, moodDays, journalDays)
   } catch (error) {
     console.error('Failed to load dashboard data:', error)
   }
@@ -333,6 +334,15 @@ const toggleHabitCheckIn = async (habitId: string) => {
         date: new Date().toISOString().split('T')[0]
       })
     }
+    
+    // Check for badges after any habit change
+    setTimeout(() => {
+      const streak = habitsStore.currentStreak
+      const moodDays = moodsStore.moodEntries?.length || 0
+      const journalDays = journalStore.entries?.length || 0
+      
+      badgeStore.checkForNewBadges(streak, moodDays, journalDays)
+    }, 200)
   } catch (error) {
     console.error('Failed to toggle habit check-in:', error)
   }
@@ -362,5 +372,48 @@ const handleDateSelected = (date: Date) => {
 
 const handleMonthChanged = (date: Date) => {
   analyticsStore.fetchCalendarData(date.getFullYear(), date.getMonth() + 1)
+}
+
+// Test function for badges
+const testBadge = () => {
+  console.log('Testing badge system...')
+  const streak = habitsStore.currentStreak
+  const moodDays = moodsStore.moodEntries?.length || 0
+  const journalDays = journalStore.entries?.length || 0
+  
+  console.log('Current stats:', { streak, moodDays, journalDays })
+  console.log('Habits data:', {
+    totalHabits: habitsStore.totalHabits,
+    activeHabits: habitsStore.activeHabitsCount,
+    completedToday: habitsStore.completedHabitsToday.length,
+    checkIns: habitsStore.checkIns.length,
+    completedDates: habitsStore.completedDates
+  })
+  
+  // For testing, let's also try with mood/journal streaks
+  const moodStreak = Math.min(moodDays, 7) // Cap at 7 for testing
+  const journalStreak = Math.min(journalDays, 5) // Cap at 5 for testing
+  
+  console.log('Testing with mood/journal streaks:', { moodStreak, journalStreak })
+  badgeStore.checkForNewBadges(streak, moodStreak, journalStreak)
+  
+  // If no badges unlocked, try to unlock the first one manually for testing
+  if (badgeStore.unlockedCount === 0) {
+    console.log('No badges unlocked yet, manually unlocking Champ badge for testing...')
+    const testBadge = {
+      id: 'champ-1',
+      name: 'Champ',
+      description: 'Complete all habits for 1 day!',
+      icon: '🏆',
+      color: 'text-yellow-500',
+      requirement: 1,
+      category: 'streak' as const,
+      unlocked: true,
+      unlockedAt: new Date().toISOString()
+    }
+    badgeStore.unlockBadge(testBadge)
+    badgeStore.newBadge = testBadge
+    badgeStore.showBadgePopup = true
+  }
 }
 </script>

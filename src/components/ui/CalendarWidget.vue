@@ -44,15 +44,27 @@
         <div class="text-sm font-medium">{{ day.date.getDate() }}</div>
         
         <!-- Indicators -->
-        <div v-if="day.indicators.length > 0" class="flex justify-center mt-1 space-x-1">
+        <div v-if="day.indicators.length > 0 || day.hasStreak" class="flex justify-center mt-1 space-x-1">
+          <!-- Streak indicator (priority) -->
           <div
-            v-for="(indicator, index) in day.indicators.slice(0, 3)"
+            v-if="day.hasStreak"
+            class="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"
+            title="All habits completed! 🎉"
+          >
+            <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          
+          <!-- Other indicators -->
+          <div
+            v-for="(indicator, index) in day.indicators.slice(0, day.hasStreak ? 2 : 3)"
             :key="index"
             :class="indicatorClasses(indicator)"
             class="w-1.5 h-1.5 rounded-full"
           ></div>
           <div
-            v-if="day.indicators.length > 3"
+            v-if="day.indicators.length > (day.hasStreak ? 2 : 3)"
             class="w-1.5 h-1.5 rounded-full bg-gray-300"
           ></div>
         </div>
@@ -70,6 +82,7 @@ interface CalendarDay {
   isToday: boolean
   isSelected: boolean
   indicators: CalendarIndicator[]
+  hasStreak: boolean
 }
 
 interface CalendarIndicator {
@@ -80,11 +93,13 @@ interface CalendarIndicator {
 interface Props {
   selectedDate?: Date
   data?: { [key: string]: CalendarIndicator[] }
+  streakDates?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedDate: () => new Date(),
-  data: () => ({})
+  data: () => ({}),
+  streakDates: () => []
 })
 
 const currentDate = ref(new Date())
@@ -124,13 +139,15 @@ const calendarDays = computed((): CalendarDay[] => {
     
     const dateKey = date.toISOString().split('T')[0]
     const indicators = props.data[dateKey] || []
+    const hasStreak = props.streakDates.includes(dateKey)
     
     days.push({
       date,
       isCurrentMonth,
       isToday,
       isSelected,
-      indicators
+      indicators,
+      hasStreak
     })
   }
   

@@ -6,29 +6,29 @@
       </div>
       
       <div class="ml-4 flex-1">
-        <p class="text-sm font-medium text-gray-600">{{ title }}</p>
+        <p class="text-sm font-semibold text-gray-700 uppercase tracking-wide">{{ title }}</p>
         <div class="flex items-baseline">
-          <p class="text-2xl font-semibold text-gray-900">{{ formattedValue }}</p>
+          <p class="text-3xl font-bold text-gradient">{{ formattedValue }}</p>
           <p v-if="change !== undefined" :class="changeClasses" class="ml-2 text-sm font-medium">
             <component :is="changeIcon" class="h-4 w-4 inline mr-1" />
             {{ Math.abs(change) }}{{ changeType }}
           </p>
         </div>
-        <p v-if="subtitle" class="text-sm text-gray-500">{{ subtitle }}</p>
+        <p v-if="subtitle" class="text-sm text-gray-600 font-medium">{{ subtitle }}</p>
       </div>
     </div>
     
     <!-- Progress bar -->
-    <div v-if="progress !== undefined" class="mt-4">
-      <div class="flex justify-between text-sm text-gray-600 mb-1">
+    <div v-if="progress !== undefined" class="mt-6">
+      <div class="flex justify-between text-sm font-semibold text-gray-700 mb-2">
         <span>Progress</span>
-        <span>{{ progress }}%</span>
+        <span class="text-gradient">{{ progress }}%</span>
       </div>
-      <div class="w-full bg-gray-200 rounded-full h-2">
+      <div class="w-full bg-gradient-to-r from-gray-200 to-gray-300 rounded-full h-3 shadow-inner">
         <div
           :class="progressBarClasses"
           :style="{ width: `${progress}%` }"
-          class="h-2 rounded-full transition-all duration-300"
+          class="h-3 rounded-full transition-all duration-500 ease-out shadow-lg"
         ></div>
       </div>
     </div>
@@ -64,14 +64,14 @@ const formattedValue = computed(() => {
 })
 
 const iconClasses = computed(() => {
-  const baseClasses = 'flex-shrink-0 p-3 rounded-lg'
+  const baseClasses = 'flex-shrink-0 p-4 rounded-2xl transition-all duration-300 hover:scale-110'
   
   const colorClasses = {
-    primary: 'bg-primary-100 text-primary-600',
-    success: 'bg-green-100 text-green-600',
-    warning: 'bg-yellow-100 text-yellow-600',
-    danger: 'bg-red-100 text-red-600',
-    info: 'bg-blue-100 text-blue-600'
+    primary: 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/25',
+    success: 'bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg shadow-green-500/25',
+    warning: 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-lg shadow-yellow-500/25',
+    danger: 'bg-gradient-to-br from-red-400 to-red-600 text-white shadow-lg shadow-red-500/25',
+    info: 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/25'
   }
   
   return [baseClasses, colorClasses[props.color]].join(' ')
@@ -105,11 +105,11 @@ const changeIcon = computed(() => {
 
 const progressBarClasses = computed(() => {
   const colorClasses = {
-    primary: 'bg-primary-600',
-    success: 'bg-green-600',
-    warning: 'bg-yellow-600',
-    danger: 'bg-red-600',
-    info: 'bg-blue-600'
+    primary: 'bg-gradient-to-r from-emerald-400 to-emerald-600',
+    success: 'bg-gradient-to-r from-green-400 to-green-600',
+    warning: 'bg-gradient-to-r from-yellow-400 to-orange-500',
+    danger: 'bg-gradient-to-r from-red-400 to-red-600',
+    info: 'bg-gradient-to-r from-blue-400 to-blue-600'
   }
   
   return colorClasses[props.color]

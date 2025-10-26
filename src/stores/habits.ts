@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { habitsService } from '@/services/habits';
-import type { Habit, HabitCheckIn, HabitStreak } from '@/types';
+import { badgeService } from '@/services/badges';
+import type { Habit, HabitCheckIn, HabitStreak, StreakData } from '@/types';
 
 export const useHabitsStore = defineStore('habits', () => {
   // State
@@ -44,6 +45,35 @@ export const useHabitsStore = defineStore('habits', () => {
     if (!activeHabits.value || activeHabits.value.length === 0) return 0;
     return (completedHabitsToday.value.length / activeHabits.value.length) * 100;
   });
+
+  // Streak calculations
+  const completedDates = computed(() => {
+    if (!checkIns.value || !activeHabits.value) return [];
+    
+    // Get all unique dates where all habits were completed
+    const dateMap = new Map<string, number>();
+    const totalActiveHabits = activeHabits.value.length;
+    
+    if (totalActiveHabits === 0) return [];
+    
+    checkIns.value.forEach(checkIn => {
+      const date = checkIn.date;
+      const currentCount = dateMap.get(date) || 0;
+      dateMap.set(date, currentCount + 1);
+    });
+    
+    // Return dates where all habits were completed
+    return Array.from(dateMap.entries())
+      .filter(([_, count]) => count === totalActiveHabits)
+      .map(([date, _]) => date);
+  });
+
+  const streakData = computed((): StreakData => {
+    return badgeService.calculateStreak(completedDates.value);
+  });
+
+  const currentStreak = computed(() => streakData.value.currentStreak);
+  const longestStreak = computed(() => streakData.value.longestStreak);
 
   // Actions
   async function fetchHabits() {
@@ -133,6 +163,12 @@ export const useHabitsStore = defineStore('habits', () => {
       const newCheckIn = await habitsService.createCheckIn(checkInData);
       if (!checkIns.value) checkIns.value = [];
       checkIns.value.push(newCheckIn);
+      
+      // Trigger badge checking after check-in
+      setTimeout(() => {
+        checkForBadges();
+      }, 100);
+      
       return newCheckIn;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create check-in';
@@ -216,6 +252,23 @@ export const useHabitsStore = defineStore('habits', () => {
     error.value = null;
   }
 
+  // Badge checking function
+  function checkForBadges() {
+    try {
+      // Import badge store dynamically to avoid circular dependency
+      import('@/stores/badges').then(({ useBadgeStore }) => {
+        const badgeStore = useBadgeStore();
+        const streak = currentStreak.value;
+        const moodDays = 0; // We'll get this from moods store if needed
+        const journalDays = 0; // We'll get this from journal store if needed
+        
+        badgeStore.checkForNewBadges(streak, moodDays, journalDays);
+      });
+    } catch (error) {
+      console.error('Error checking badges:', error);
+    }
+  }
+
   return {
     // State
     habits,
@@ -232,6 +285,10 @@ export const useHabitsStore = defineStore('habits', () => {
     todayCheckIns,
     completedHabitsToday,
     completionRate,
+    completedDates,
+    streakData,
+    currentStreak,
+    longestStreak,
     
     // Actions
     fetchHabits,

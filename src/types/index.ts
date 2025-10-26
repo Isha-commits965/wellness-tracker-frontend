@@ -175,3 +175,30 @@ export interface BaseModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   closable?: boolean;
 }
+
+// Badge and Achievement types
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  requirement: number; // days required
+  category: 'streak' | 'habits' | 'mood' | 'journal';
+  unlocked: boolean;
+  unlockedAt?: string;
+}
+
+export interface Achievement {
+  id: string;
+  badgeId: string;
+  unlockedAt: string;
+  streak: number;
+}
+
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate?: string;
+  completedDates: string[];
+}
