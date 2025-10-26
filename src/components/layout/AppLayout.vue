@@ -76,6 +76,53 @@
           </div>
         </div>
 
+        <!-- Meditation Section -->
+        <div class="px-4 py-4 border-t border-purple-200">
+          <h3 v-if="!isCollapsed" class="text-sm font-bold text-gray-700 mb-3 flex items-center">
+            <span class="text-lg mr-2">🧘</span>
+            Guided Meditation
+          </h3>
+          <div v-if="!isCollapsed" class="space-y-2">
+            <a
+              v-for="meditation in meditationVideos"
+              :key="meditation.id"
+              :href="meditation.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex items-center p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl hover:from-indigo-200 hover:to-purple-200 transition-all duration-300 hover:scale-105"
+            >
+              <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+              <div class="ml-3 flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 truncate">{{ meditation.title }}</p>
+                <p class="text-xs text-gray-600 truncate">{{ meditation.duration }}</p>
+              </div>
+            </a>
+          </div>
+          <!-- Collapsed meditation section -->
+          <div v-else class="flex flex-col items-center space-y-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <span class="text-lg">🧘</span>
+            </div>
+            <a
+              v-for="meditation in meditationVideos.slice(0, 3)"
+              :key="meditation.id"
+              :href="meditation.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-lg flex items-center justify-center hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 hover:scale-110"
+              :title="meditation.title"
+            >
+              <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
         <!-- User menu -->
         <div class="border-t border-purple-200 p-4 bg-gradient-to-r from-purple-50 to-pink-50">
           <div class="flex items-center">
@@ -127,6 +174,17 @@
             </div>
           </div>
         </div>
+        
+        <!-- Always visible logout button -->
+        <div v-if="authStore.isAuthenticated" class="px-4 py-4 border-t border-purple-200">
+          <button
+            @click="handleLogout"
+            class="w-full flex items-center justify-center px-4 py-3 text-sm font-semibold text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 rounded-2xl transition-all duration-200 hover:scale-105"
+          >
+            <span class="text-lg mr-3">🚪</span>
+            <span v-if="!isCollapsed">Sign Out</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -144,7 +202,15 @@
             </svg>
           </button>
           <h1 class="text-lg font-bold text-white">{{ currentPageTitle }}</h1>
-          <div class="w-6"></div> <!-- Spacer for centering -->
+          <button
+            @click="handleLogout"
+            class="text-white hover:text-red-200 transition-colors p-2 rounded-xl hover:bg-red-500/20"
+            title="Sign out"
+          >
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -164,10 +230,18 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useHabitsStore } from '@/stores/habits'
+import { useMoodsStore } from '@/stores/moods'
+import { useJournalStore } from '@/stores/journal'
+import { useGoalsStore } from '@/stores/goals'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const habitsStore = useHabitsStore()
+const moodsStore = useMoodsStore()
+const journalStore = useJournalStore()
+const goalsStore = useGoalsStore()
 
 const isCollapsed = ref(false)
 const showUserMenu = ref(false)
@@ -175,25 +249,68 @@ const showUserMenu = ref(false)
 const user = computed(() => authStore.user)
 const userInitials = computed(() => authStore.userInitials)
 
-const navigationItems = [
-  { name: 'Dashboard', href: '/dashboard', emoji: '🏠', badge: null },
-  { name: 'Habits', href: '/habits', emoji: '🎯', badge: '3' },
-  { name: 'Moods', href: '/moods', emoji: '😊', badge: null },
-  { name: 'Journal', href: '/journal', emoji: '📝', badge: '5' },
-  { name: 'Analytics', href: '/analytics', emoji: '📊', badge: null },
-  { name: 'Goals', href: '/goals', emoji: '🎯', badge: '2' }
-]
+// Meditation videos data
+const meditationVideos = ref([
+  {
+    id: 1,
+    title: "10-Minute Morning Meditation",
+    duration: "10 min",
+    url: "https://www.youtube.com/watch?v=ZToicYcHIOU"
+  },
+  {
+    id: 2,
+    title: "5-Minute Breathing Exercise",
+    duration: "5 min",
+    url: "https://www.youtube.com/watch?v=tybOi4hjZFQ"
+  },
+  {
+    id: 3,
+    title: "Body Scan Meditation",
+    duration: "15 min",
+    url: "https://www.youtube.com/watch?v=86HUcX8ZtGA"
+  },
+  {
+    id: 4,
+    title: "Sleep Meditation",
+    duration: "20 min",
+    url: "https://www.youtube.com/watch?v=1ZYbU82GVz4"
+  },
+  {
+    id: 5,
+    title: "Stress Relief Meditation",
+    duration: "12 min",
+    url: "https://www.youtube.com/watch?v=O-6f5wQXSu8"
+  },
+  {
+    id: 6,
+    title: "Mindfulness for Beginners",
+    duration: "8 min",
+    url: "https://www.youtube.com/watch?v=6p_yaNFSYao"
+  }
+])
 
-// Quick stats data
-const quickStats = ref({
-  streak: 7,
-  mood: 8,
-  habitsCompleted: 3,
-  totalHabits: 4
-})
+// Dynamic navigation items with real data
+const navigationItems = computed(() => [
+  { name: 'Dashboard', href: '/dashboard', emoji: '🏠', badge: null },
+  { name: 'Habits', href: '/habits', emoji: '🎯', badge: habitsStore.totalHabits?.toString() || '0' },
+  { name: 'Moods', href: '/moods', emoji: '😊', badge: null },
+  { name: 'Journal', href: '/journal', emoji: '📝', badge: journalStore.entries?.length?.toString() || '0' },
+  { name: 'Meditation', href: '/meditation', emoji: '🧘', badge: null },
+  { name: 'Therapy', href: '/therapy', emoji: '💚', badge: null },
+  { name: 'Analytics', href: '/analytics', emoji: '📊', badge: null },
+  { name: 'Goals', href: '/goals', emoji: '🎯', badge: goalsStore.totalGoals?.toString() || '0' }
+])
+
+// Dynamic quick stats with real data
+const quickStats = computed(() => ({
+  streak: habitsStore.currentStreak || 0,
+  mood: moodsStore.averageMood || 0,
+  habitsCompleted: habitsStore.completedHabitsToday?.length || 0,
+  totalHabits: habitsStore.totalHabits || 0
+}))
 
 const currentPageTitle = computed(() => {
-  const item = navigationItems.find(item => item.href === route.path)
+  const item = navigationItems.value.find(item => item.href === route.path)
   return item?.name || 'Wellness Tracker'
 })
 
@@ -230,10 +347,15 @@ const getIconClasses = (href: string) => {
 
 const handleLogout = async () => {
   try {
-    await authStore.logout()
-    router.push('/login')
+    // Show confirmation dialog
+    if (confirm('Are you sure you want to sign out?')) {
+      await authStore.logout()
+      router.push('/login')
+    }
   } catch (error) {
     console.error('Logout failed:', error)
+    // Even if logout fails, redirect to login
+    router.push('/login')
   }
 }
 
@@ -246,8 +368,22 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  
+  // Fetch data for sidebar stats
+  try {
+    await Promise.all([
+      habitsStore.fetchHabits(),
+      habitsStore.fetchCheckIns(),
+      habitsStore.fetchStreaks(),
+      moodsStore.fetchMoodEntries(),
+      journalStore.fetchJournalEntries(),
+      goalsStore.fetchGoals()
+    ])
+  } catch (error) {
+    console.error('Failed to load sidebar data:', error)
+  }
 })
 
 onUnmounted(() => {

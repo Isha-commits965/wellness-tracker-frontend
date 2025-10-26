@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2">
-    <label v-if="label" class="block text-sm font-medium" style="color: #f8f8f8;">
+    <label v-if="label" class="block text-sm font-medium text-gray-700">
       {{ label }}
     </label>
     
@@ -29,7 +29,7 @@
     
     <!-- Mood description -->
     <div v-if="showDescription" class="text-center">
-      <span class="text-sm" style="color: #f8f8f8;">{{ getMoodDescription(modelValue) }}</span>
+      <span class="text-sm text-gray-600">{{ getMoodDescription(modelValue) }}</span>
     </div>
   </div>
 </template>

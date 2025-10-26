@@ -25,6 +25,21 @@
       </div>
     </div>
 
+    <!-- Success notification -->
+    <div v-if="showSuccessMessage" class="fixed top-4 right-4 z-50 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-2xl shadow-lg animate-fade-in">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div>
+          <h4 class="font-bold text-lg">Journal Entry Created! ✨</h4>
+          <p class="text-sm text-white/90">AI response generated successfully</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Journal entries -->
     <div class="space-y-4">
       <div v-if="journalStore.isLoading" class="text-center py-8">
@@ -68,10 +83,10 @@
                 {{ entry.content }}
               </p>
               <div class="mt-4 flex items-center space-x-6 text-sm">
-                <div class="flex items-center space-x-2 bg-gradient-to-r from-yellow-100 to-orange-100 px-3 py-2 rounded-full">
-                  <span class="text-lg">😊</span>
-                  <span class="font-semibold text-orange-700">Mood: {{ entry.moodBefore }} → {{ entry.moodAfter }}</span>
-                </div>
+                       <div class="flex items-center space-x-2 bg-gradient-to-r from-yellow-100 to-orange-100 px-3 py-2 rounded-full">
+                         <span class="text-lg">😊</span>
+                         <span class="font-semibold text-orange-700">Mood: {{ entry.moodBefore }}</span>
+                       </div>
                 <div v-if="entry.aiResponse" class="flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-purple-100 px-3 py-2 rounded-full">
                   <span class="text-lg">🤖</span>
                   <span class="font-semibold text-blue-700">AI Response</span>
@@ -111,18 +126,9 @@
       <div class="space-y-6">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="label">Mood Before</label>
+            <label class="label">How are you feeling?</label>
             <MoodSlider
               v-model="entryForm.moodBefore"
-              type="mood"
-              :show-emoji="true"
-              :show-description="false"
-            />
-          </div>
-          <div>
-            <label class="label">Mood After</label>
-            <MoodSlider
-              v-model="entryForm.moodAfter"
               type="mood"
               :show-emoji="true"
               :show-description="false"
@@ -159,7 +165,16 @@
               Cancel
             </BaseButton>
             <BaseButton @click="handleSubmit" :loading="isSubmitting">
-              {{ showCreateModal ? 'Create Entry' : 'Update Entry' }}
+              <span v-if="isGeneratingAI" class="flex items-center space-x-2">
+                <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Generating AI Response...</span>
+              </span>
+              <span v-else>
+                {{ showCreateModal ? 'Create Entry' : 'Update Entry' }}
+              </span>
             </BaseButton>
           </div>
         </div>
@@ -169,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useJournalStore } from '@/stores/journal'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -186,12 +201,12 @@ const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const isSubmitting = ref(false)
 const editingEntry = ref<JournalEntry | null>(null)
+const isGeneratingAI = ref(false)
+const showSuccessMessage = ref(false)
 
 const entryForm = reactive({
   content: '',
-  moodBefore: 5,
-  moodAfter: 5,
-  date: new Date().toISOString().split('T')[0]
+  moodBefore: 5
 })
 
 const validEntries = computed(() => {
@@ -214,7 +229,6 @@ const editEntry = (entry: JournalEntry) => {
   editingEntry.value = entry
   entryForm.content = entry.content
   entryForm.moodBefore = entry.moodBefore
-  entryForm.moodAfter = entry.moodAfter
   showEditModal.value = true
 }
 
@@ -238,12 +252,10 @@ const closeModal = () => {
 const resetForm = () => {
   entryForm.content = ''
   entryForm.moodBefore = 5
-  entryForm.moodAfter = 5
-  entryForm.date = new Date().toISOString().split('T')[0]
 }
 
 const saveDraft = () => {
-  journalStore.saveDraft(entryForm.content, entryForm.moodBefore, entryForm.moodAfter)
+  journalStore.saveDraft(entryForm.content, entryForm.moodBefore, entryForm.moodBefore)
 }
 
 const loadDraft = () => {
@@ -251,18 +263,33 @@ const loadDraft = () => {
   if (draft) {
     entryForm.content = draft.content
     entryForm.moodBefore = draft.moodBefore
-    entryForm.moodAfter = draft.moodAfter
   }
 }
 
 const handleSubmit = async () => {
   try {
     isSubmitting.value = true
+    isGeneratingAI.value = true
+    
+    console.log('Submitting journal entry with data:', entryForm)
     
     if (showCreateModal.value) {
-      await journalStore.createJournalEntry(entryForm)
+      const newEntry = await journalStore.createJournalEntry(entryForm)
+      console.log('Created journal entry:', newEntry)
+      
+      // Immediately refresh the journal entries to show the new entry with AI response
+      await journalStore.fetchJournalEntries()
+      
+      // Show success message
+      showSuccessMessage.value = true
+      setTimeout(() => {
+        showSuccessMessage.value = false
+      }, 3000)
+      
+      console.log('Journal entry created successfully with AI response!')
     } else if (editingEntry.value) {
       await journalStore.updateJournalEntry(editingEntry.value.id, entryForm)
+      await journalStore.fetchJournalEntries()
     }
     
     closeModal()
@@ -270,6 +297,7 @@ const handleSubmit = async () => {
     console.error('Failed to save journal entry:', error)
   } finally {
     isSubmitting.value = false
+    isGeneratingAI.value = false
   }
 }
 </script>

@@ -52,11 +52,13 @@ export const authService = {
     
     const response = await apiService.post<any>('/auth/register', registerPayload);
     
+    console.log('Registration response:', response);
+    
     // The backend returns just the user object after registration
     // Now we need to login to get the token
-    if (response.data) {
+    if (response) {
       // Store user data temporarily
-      localStorage.setItem('user', JSON.stringify(response.data));
+      localStorage.setItem('user', JSON.stringify(response));
       
       // Automatically login after successful registration
       try {
@@ -68,16 +70,16 @@ export const authService = {
       } catch (loginError) {
         console.error('Auto-login failed after registration:', loginError);
         // Still return the user data even if login fails
-        return { user: response.data };
+        return { user: response };
       }
     }
     
-    return response.data;
+    return response;
   },
 
   async getCurrentUser(): Promise<User> {
     const response = await apiService.get<User>('/auth/me');
-    return response.data;
+    return response;
   },
 
   async logout(): Promise<void> {
@@ -95,7 +97,7 @@ export const authService = {
 
   async refreshToken(refreshToken: string): Promise<{ token: string }> {
     const response = await apiService.post<{ token: string }>('/auth/refresh', { refreshToken });
-    return response.data;
+    return response;
   },
 
   isAuthenticated(): boolean {

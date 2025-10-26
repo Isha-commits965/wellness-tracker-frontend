@@ -68,12 +68,31 @@ export const useHabitsStore = defineStore('habits', () => {
       .map(([date, _]) => date);
   });
 
+  // Calculate overall streak from API data
+  const currentStreak = computed(() => {
+    if (!streaks.value || streaks.value.length === 0) {
+      console.log('No streaks data available, returning 0')
+      return 0;
+    }
+    
+    // Find the maximum current streak among all habits
+    const maxStreak = Math.max(...streaks.value.map(streak => streak.currentStreak));
+    console.log('Calculated current streak:', maxStreak, 'from streaks:', streaks.value)
+    return maxStreak;
+  });
+
+  const longestStreak = computed(() => {
+    if (!streaks.value || streaks.value.length === 0) return 0;
+    
+    // Find the maximum longest streak among all habits
+    const maxLongestStreak = Math.max(...streaks.value.map(streak => streak.longestStreak));
+    return maxLongestStreak;
+  });
+
+  // Keep the old streak data for badge calculations (fallback)
   const streakData = computed((): StreakData => {
     return badgeService.calculateStreak(completedDates.value);
   });
-
-  const currentStreak = computed(() => streakData.value.currentStreak);
-  const longestStreak = computed(() => streakData.value.longestStreak);
 
   // Actions
   async function fetchHabits() {
@@ -90,6 +109,19 @@ export const useHabitsStore = defineStore('habits', () => {
       throw err;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  async function fetchStreaks() {
+    try {
+      console.log('Fetching streaks from API...')
+      const streaksData = await habitsService.getStreaks();
+      console.log('Received streaks data:', streaksData)
+      streaks.value = streaksData;
+      console.log('Updated streaks in store:', streaks.value)
+    } catch (err: any) {
+      console.error('Error fetching streaks:', err)
+      // Don't throw error for streaks, just log it
     }
   }
 
@@ -267,6 +299,11 @@ export const useHabitsStore = defineStore('habits', () => {
     } catch (error) {
       console.error('Error checking badges:', error);
     }
+  }
+
+  // Get streak for a specific habit
+  function getHabitStreak(habitId: string): HabitStreak | null {
+    return streaks.value.find(streak => streak.habitId === habitId) || null;
   }
 
   return {

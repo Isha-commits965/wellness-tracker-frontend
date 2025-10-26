@@ -52,9 +52,10 @@ export interface HabitCheckIn {
 
 export interface HabitStreak {
   habitId: string;
+  habitName: string;
   currentStreak: number;
   longestStreak: number;
-  lastCheckIn?: string;
+  lastCompleted: string | null;
 }
 
 // Mood types
@@ -95,11 +96,8 @@ export interface Goal {
   id: string;
   title: string;
   description?: string;
-  category: string;
-  priority: 'low' | 'medium' | 'high';
-  targetDate: string;
-  status: 'in_progress' | 'completed' | 'overdue';
-  progress: number; // 0-100
+  targetDate?: string;
+  isCompleted: boolean;
   createdAt: string;
   updatedAt: string;
 }

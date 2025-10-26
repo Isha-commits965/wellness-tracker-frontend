@@ -54,12 +54,20 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = null;
       
       const response = await authService.register(userData);
-      user.value = response.user;
-      token.value = response.token;
       
-      return response;
+      // Make sure we have the required data
+      if (response && (response.user || response.token)) {
+        user.value = response.user;
+        token.value = response.token;
+        error.value = null; // Clear any previous errors
+        return response;
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Registration failed';
+      const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
+      error.value = errorMessage;
+      console.error('Registration error:', err);
       throw err;
     } finally {
       isLoading.value = false;

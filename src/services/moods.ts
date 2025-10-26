@@ -11,8 +11,17 @@ export const moodsService = {
       notes: moodData.notes || '',
       date: moodData.date
     };
-    const response = await apiService.post<MoodEntry>('/moods/', backendPayload);
-    return response.data;
+    const response = await apiService.post<any>('/moods/', backendPayload);
+    // Map response back to frontend format
+    return {
+      id: response.id,
+      mood: response.mood_score,
+      energy: response.energy_level,
+      stress: response.stress_level,
+      notes: response.notes || '',
+      date: response.date,
+      createdAt: response.created_at
+    };
   },
 
   async getMoodEntries(startDate?: string, endDate?: string): Promise<MoodEntry[]> {
@@ -39,8 +48,17 @@ export const moodsService = {
   },
 
   async getMoodEntry(id: string): Promise<MoodEntry> {
-    const response = await apiService.get<MoodEntry>(`/moods/${id}`);
-    return response.data;
+    const response = await apiService.get<any>(`/moods/${id}`);
+    // Map response back to frontend format
+    return {
+      id: response.id,
+      mood: response.mood_score,
+      energy: response.energy_level,
+      stress: response.stress_level,
+      notes: response.notes || '',
+      date: response.date,
+      createdAt: response.created_at
+    };
   },
 
   async updateMoodEntry(id: string, moodData: Partial<MoodEntry>): Promise<MoodEntry> {
@@ -52,16 +70,20 @@ export const moodsService = {
     if (moodData.notes !== undefined) backendPayload.notes = moodData.notes;
     if (moodData.date !== undefined) backendPayload.date = moodData.date;
     
+    console.log('Updating mood entry:', id, 'with payload:', backendPayload);
+    
     const response = await apiService.put<any>(`/moods/${id}`, backendPayload);
+    console.log('Update response:', response);
+    
     // Map response back to frontend format
     return {
-      id: response.data.id,
-      mood: response.data.mood_score,
-      energy: response.data.energy_level,
-      stress: response.data.stress_level,
-      notes: response.data.notes || '',
-      date: response.data.date,
-      createdAt: response.data.created_at
+      id: response.id,
+      mood: response.mood_score,
+      energy: response.energy_level,
+      stress: response.stress_level,
+      notes: response.notes || '',
+      date: response.date,
+      createdAt: response.created_at
     };
   },
 
@@ -71,28 +93,28 @@ export const moodsService = {
 
   // Trends and Analytics
   async getMoodTrends(period: 'week' | 'month' | 'year' = 'month'): Promise<MoodTrends> {
-    const response = await apiService.get<MoodTrends>(`/moods/trends/?period=${period}`);
-    return response.data;
+    const response = await apiService.get<any>(`/moods/trends/?period=${period}`);
+    return response;
   },
 
   async getWeeklyStats(): Promise<any> {
     const response = await apiService.get('/moods/stats/weekly');
-    return response.data;
+    return response;
   },
 
   async getMonthlyStats(): Promise<any> {
     const response = await apiService.get('/moods/stats/monthly');
-    return response.data;
+    return response;
   },
 
   async getMoodDistribution(period: 'week' | 'month' | 'year' = 'month'): Promise<any> {
     const response = await apiService.get(`/moods/distribution?period=${period}`);
-    return response.data;
+    return response;
   },
 
   async getMoodCorrelations(): Promise<any> {
     const response = await apiService.get('/moods/correlations');
-    return response.data;
+    return response;
   },
 
   // Quick mood logging

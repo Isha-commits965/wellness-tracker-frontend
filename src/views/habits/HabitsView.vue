@@ -224,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { useHabitsStore } from '@/stores/habits'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -279,6 +279,9 @@ const isHabitCompletedToday = (habitId: string) => {
 const toggleHabitStatus = async (habitId: string, isActive: boolean) => {
   try {
     await habitsStore.toggleHabitStatus(habitId, isActive)
+    
+    // Force reactivity update to ensure immediate UI changes
+    await nextTick()
   } catch (error) {
     console.error('Failed to toggle habit status:', error)
   }
@@ -298,6 +301,9 @@ const toggleHabitCheckIn = async (habitId: string) => {
         date: new Date().toISOString().split('T')[0]
       })
     }
+    
+    // Force reactivity update to ensure immediate UI changes
+    await nextTick()
   } catch (error) {
     console.error('Failed to toggle habit check-in:', error)
   }
@@ -337,9 +343,22 @@ const handleSubmit = async () => {
     errors.value = {}
     
     if (showCreateModal.value) {
-      await habitsStore.createHabit(habitForm)
+      const newHabit = await habitsStore.createHabit(habitForm)
+      
+      // Force immediate UI update by refreshing the habits list
+      await habitsStore.fetchHabits()
+      
+      // Force reactivity update
+      await nextTick()
+      
+      console.log('New habit created:', newHabit)
+      console.log('Current habits:', habitsStore.habits)
     } else if (editingHabit.value) {
       await habitsStore.updateHabit(editingHabit.value.id, habitForm)
+      
+      // Force immediate UI update
+      await habitsStore.fetchHabits()
+      await nextTick()
     }
     
     closeModal()

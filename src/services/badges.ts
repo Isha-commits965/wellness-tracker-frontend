@@ -109,26 +109,27 @@ export const badgeService = {
         }
       }
     } else {
-      // If today is not completed, check from most recent completed date
-      const mostRecentDate = sortedDates[0];
-      if (mostRecentDate) {
-        const daysDiff = Math.floor((today.getTime() - mostRecentDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysDiff === 1) {
-          // If most recent was yesterday, count backwards
-          currentStreak = 1;
-          for (let i = 1; i < 365; i++) {
-            const checkDate = new Date(mostRecentDate);
-            checkDate.setDate(checkDate.getDate() - i);
-            const checkDateStr = checkDate.toISOString().split('T')[0];
-            
-            if (completedDates.includes(checkDateStr)) {
-              currentStreak++;
-            } else {
-              break;
-            }
+      // If today is not completed, check if yesterday was completed
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      if (completedDates.includes(yesterdayStr)) {
+        // If yesterday was completed, count backwards from yesterday
+        currentStreak = 1;
+        for (let i = 2; i < 365; i++) {
+          const checkDate = new Date(today);
+          checkDate.setDate(checkDate.getDate() - i);
+          const checkDateStr = checkDate.toISOString().split('T')[0];
+          
+          if (completedDates.includes(checkDateStr)) {
+            currentStreak++;
+          } else {
+            break;
           }
         }
       }
+      // If neither today nor yesterday was completed, current streak is 0
     }
 
     // Calculate longest streak

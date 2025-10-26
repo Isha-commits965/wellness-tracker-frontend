@@ -3,14 +3,25 @@
     <!-- Welcome section -->
     <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl p-8 text-white relative overflow-hidden">
       <div class="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20"></div>
-      <div class="relative z-10">
-        <h1 class="text-4xl font-bold mb-2 animate-pulse-slow">Welcome back, {{ user?.fullName }}! 👋</h1>
-        <p class="text-xl text-white/90">Ready to continue your wellness journey?</p>
-        <div class="mt-4 flex items-center space-x-2">
-          <div class="w-3 h-3 bg-yellow-400 rounded-full animate-bounce-slow"></div>
-          <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce-slow" style="animation-delay: 0.2s"></div>
-          <div class="w-3 h-3 bg-blue-400 rounded-full animate-bounce-slow" style="animation-delay: 0.4s"></div>
+      <div class="relative z-10 flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-bold mb-2 animate-pulse-slow">Welcome back, {{ user?.fullName }}! 👋</h1>
+          <p class="text-xl text-white/90">Ready to continue your wellness journey?</p>
+          <div class="mt-4 flex items-center space-x-2">
+            <div class="w-3 h-3 bg-yellow-400 rounded-full animate-bounce-slow"></div>
+            <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce-slow" style="animation-delay: 0.2s"></div>
+            <div class="w-3 h-3 bg-blue-400 rounded-full animate-bounce-slow" style="animation-delay: 0.4s"></div>
+          </div>
         </div>
+        <button
+          @click="handleLogout"
+          class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all duration-200 hover:scale-105 backdrop-blur-sm border border-white/30"
+          title="Sign out"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -232,7 +243,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useHabitsStore } from '@/stores/habits'
 import { useMoodsStore } from '@/stores/moods'
@@ -246,6 +258,7 @@ import MoodSlider from '@/components/ui/MoodSlider.vue'
 import CalendarWidget from '@/components/ui/CalendarWidget.vue'
 import BadgePopup from '@/components/ui/BadgePopup.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const habitsStore = useHabitsStore()
 const moodsStore = useMoodsStore()
@@ -298,6 +311,7 @@ onMounted(async () => {
     await Promise.all([
       habitsStore.fetchHabits(),
       habitsStore.fetchCheckIns(),
+      habitsStore.fetchStreaks(),
       moodsStore.fetchMoodEntries(),
       journalStore.fetchJournalEntries(),
       badgeStore.loadBadges()
@@ -313,6 +327,18 @@ onMounted(async () => {
     console.error('Failed to load dashboard data:', error)
   }
 })
+
+// Watch for changes in habits and moods to ensure immediate UI updates
+watch(
+  () => [habitsStore.checkIns, moodsStore.moodEntries],
+  () => {
+    // Force reactivity update when habits or moods change
+    nextTick(() => {
+      // This will trigger computed properties to re-evaluate
+    })
+  },
+  { deep: true }
+)
 
 const isHabitCompletedToday = (habitId: string) => {
   return habitsStore.isHabitCompletedToday(habitId)
@@ -334,6 +360,9 @@ const toggleHabitCheckIn = async (habitId: string) => {
         date: new Date().toISOString().split('T')[0]
       })
     }
+    
+    // Force reactivity update
+    await nextTick()
     
     // Check for badges after any habit change
     setTimeout(() => {
@@ -357,12 +386,27 @@ const logQuickMood = async () => {
       quickMood.value.stress
     )
     
+    // Force reactivity update
+    await nextTick()
+    
     // Reset form
     quickMood.value = { mood: 5, energy: 5, stress: 5 }
   } catch (error) {
     console.error('Failed to log mood:', error)
   } finally {
     isLoggingMood.value = false
+  }
+}
+
+const handleLogout = async () => {
+  try {
+    if (confirm('Are you sure you want to sign out?')) {
+      await authStore.logout()
+      router.push('/login')
+    }
+  } catch (error) {
+    console.error('Logout failed:', error)
+    router.push('/login')
   }
 }
 

@@ -3,30 +3,38 @@ import type { JournalEntry, PaginatedResponse } from '@/types';
 
 export const journalService = {
   async createJournalEntry(entryData: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<JournalEntry> {
-    // Map frontend camelCase to backend snake_case
+    // Use Option 1 format (recommended) - only content and mood_before
     const backendPayload = {
-      content: entryData.content,
-      mood_before: entryData.moodBefore,
-      mood_after: entryData.moodAfter,
-      date: entryData.date
+      content: entryData.content || '',
+      mood_before: entryData.moodBefore || 5
     };
     
-    const response = await apiService.post<any>('/journal/', backendPayload);
-    console.log('Create journal response:', response);
+    console.log('Sending journal entry payload:', backendPayload);
+    console.log('Original entry data:', entryData);
+    console.log('Using Option 1 format (no date)');
     
-    // The response is already the data, not wrapped in .data
-    return {
-      id: response.id,
-      content: response.content,
-      moodBefore: response.mood_before,
-      moodAfter: response.mood_after,
-      date: response.date,
-      aiResponse: response.ai_response,
-      suggestions: response.suggestions || [],
-      userId: response.user_id,
-      createdAt: response.created_at,
-      updatedAt: response.updated_at
-    };
+    try {
+      const response = await apiService.post<any>('/journal/', backendPayload);
+      console.log('Create journal response:', response);
+      
+      // Map backend response to frontend format
+      return {
+        id: response.id.toString(),
+        content: response.content,
+        moodBefore: response.mood_before,
+        moodAfter: response.mood_after || response.mood_before, // Use mood_before as fallback
+        date: response.date,
+        aiResponse: response.ai_response,
+        suggestions: response.suggestions || [],
+        userId: response.user_id?.toString() || '',
+        createdAt: response.created_at,
+        updatedAt: response.updated_at || response.created_at
+      };
+    } catch (error: any) {
+      console.error('Journal creation error details:', error.response?.data);
+      console.error('Request payload that failed:', backendPayload);
+      throw error;
+    }
   },
 
   async getJournalEntries(page: number = 1, limit: number = 10, search?: string): Promise<PaginatedResponse<JournalEntry>> {

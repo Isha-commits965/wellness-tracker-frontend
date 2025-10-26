@@ -57,6 +57,18 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/meditation',
+      name: 'meditation',
+      component: () => import('@/views/meditation/MeditationView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/therapy',
+      name: 'therapy',
+      component: () => import('@/views/therapy/TherapyView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/analytics',
       name: 'analytics',
       component: () => import('@/views/analytics/AnalyticsView.vue'),

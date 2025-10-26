@@ -25,18 +25,54 @@ export const habitsService = {
   },
 
   async getHabit(id: string): Promise<Habit> {
-    const response = await apiService.get<Habit>(`/habits/${id}`);
-    return response.data;
+    const response = await apiService.get<any>(`/habits/${id}`);
+    // Map backend snake_case to frontend camelCase
+    return {
+      id: response.id,
+      name: response.name,
+      description: response.description || '',
+      category: response.category,
+      frequency: response.target_frequency || response.frequency || 'daily',
+      targetValue: response.target_value || 1,
+      unit: response.unit || 'times',
+      isActive: response.is_active !== undefined ? response.is_active : true,
+      createdAt: response.created_at || response.createdAt,
+      updatedAt: response.updated_at || response.updatedAt
+    };
   },
 
   async createHabit(habitData: Omit<Habit, 'id' | 'createdAt' | 'updatedAt'>): Promise<Habit> {
-    const response = await apiService.post<Habit>('/habits/', habitData);
-    return response.data;
+    const response = await apiService.post<any>('/habits/', habitData);
+    // Map backend snake_case to frontend camelCase
+    return {
+      id: response.id,
+      name: response.name,
+      description: response.description || '',
+      category: response.category,
+      frequency: response.target_frequency || response.frequency || 'daily',
+      targetValue: response.target_value || 1,
+      unit: response.unit || 'times',
+      isActive: response.is_active !== undefined ? response.is_active : true,
+      createdAt: response.created_at || response.createdAt,
+      updatedAt: response.updated_at || response.updatedAt
+    };
   },
 
   async updateHabit(id: string, habitData: Partial<Habit>): Promise<Habit> {
-    const response = await apiService.put<Habit>(`/habits/${id}`, habitData);
-    return response.data;
+    const response = await apiService.put<any>(`/habits/${id}`, habitData);
+    // Map backend snake_case to frontend camelCase
+    return {
+      id: response.id,
+      name: response.name,
+      description: response.description || '',
+      category: response.category,
+      frequency: response.target_frequency || response.frequency || 'daily',
+      targetValue: response.target_value || 1,
+      unit: response.unit || 'times',
+      isActive: response.is_active !== undefined ? response.is_active : true,
+      createdAt: response.created_at || response.createdAt,
+      updatedAt: response.updated_at || response.updatedAt
+    };
   },
 
   async deleteHabit(id: string): Promise<void> {
@@ -44,8 +80,20 @@ export const habitsService = {
   },
 
   async toggleHabitStatus(id: string, isActive: boolean): Promise<Habit> {
-    const response = await apiService.patch<Habit>(`/habits/${id}/toggle`, { isActive });
-    return response.data;
+    const response = await apiService.patch<any>(`/habits/${id}/toggle`, { isActive });
+    // Map backend snake_case to frontend camelCase
+    return {
+      id: response.id,
+      name: response.name,
+      description: response.description || '',
+      category: response.category,
+      frequency: response.target_frequency || response.frequency || 'daily',
+      targetValue: response.target_value || 1,
+      unit: response.unit || 'times',
+      isActive: response.is_active !== undefined ? response.is_active : true,
+      createdAt: response.created_at || response.createdAt,
+      updatedAt: response.updated_at || response.updatedAt
+    };
   },
 
   // Check-ins
@@ -95,8 +143,16 @@ export const habitsService = {
   },
 
   async updateCheckIn(id: string, checkInData: Partial<HabitCheckIn>): Promise<HabitCheckIn> {
-    const response = await apiService.put<HabitCheckIn>(`/habits/check-ins/${id}`, checkInData);
-    return response.data;
+    const response = await apiService.put<any>(`/habits/check-ins/${id}`, checkInData);
+    // Map backend snake_case to frontend camelCase
+    return {
+      id: response.id,
+      habitId: response.habit_id,
+      date: response.date,
+      value: response.value,
+      notes: response.notes || '',
+      createdAt: response.created_at
+    };
   },
 
   async deleteCheckIn(id: string): Promise<void> {
@@ -105,23 +161,30 @@ export const habitsService = {
 
   // Streaks
   async getStreaks(): Promise<HabitStreak[]> {
-    const response = await apiService.get<HabitStreak[]>('/habits/streaks/');
-    return response.data;
+    const response = await apiService.get<any[]>('/habits/streaks/');
+    // Map backend response to frontend format
+    return response.map((streak: any) => ({
+      habitId: streak.habit_id,
+      habitName: streak.habit_name,
+      currentStreak: streak.current_streak,
+      longestStreak: streak.longest_streak,
+      lastCompleted: streak.last_completed
+    }));
   },
 
   async getHabitStreak(habitId: string): Promise<HabitStreak> {
-    const response = await apiService.get<HabitStreak>(`/habits/${habitId}/streak`);
-    return response.data;
+    const response = await apiService.get<any>(`/habits/${habitId}/streak`);
+    return response;
   },
 
   // Analytics
   async getHabitStats(habitId: string, period: 'week' | 'month' | 'year' = 'month') {
     const response = await apiService.get(`/habits/${habitId}/stats?period=${period}`);
-    return response.data;
+    return response;
   },
 
   async getCompletionRate(habitId: string, startDate: string, endDate: string) {
     const response = await apiService.get(`/habits/${habitId}/completion-rate?start_date=${startDate}&end_date=${endDate}`);
-    return response.data;
+    return response;
   }
 };
