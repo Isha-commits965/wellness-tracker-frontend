@@ -1,0 +1,18 @@
+services:
+  # Frontend Service
+  - type: web
+    name: wellness-tracker-frontend
+    env: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run preview
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://your-backend-service-name.onrender.com
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

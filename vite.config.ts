@@ -15,4 +15,22 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
+          ui: ['@heroicons/vue', 'tailwindcss']
+        }
+      }
+    }
+  },
+  preview: {
+    port: 4173,
+    host: true
+  }
 })
