@@ -6,7 +6,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://0.0.0.0:8001',
+      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -72,34 +72,34 @@ class ApiService {
   }
 
   // Generic HTTP methods
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.api.get(url, config);
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.api.get(url, config);
     return response.data;
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.api.post(url, data, config);
+  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.api.post(url, data, config);
     return response.data;
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.api.put(url, data, config);
+  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.api.put(url, data, config);
     return response.data;
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.api.patch(url, data, config);
+  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.api.patch(url, data, config);
     return response.data;
   }
 
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.api.delete(url, config);
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.api.delete(url, config);
     return response.data;
   }
 
   // File upload method
-  async upload<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response: AxiosResponse<ApiResponse<T>> = await this.api.post(url, formData, {
+  async upload<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.api.post(url, formData, {
       ...config,
       headers: {
         'Content-Type': 'multipart/form-data',
