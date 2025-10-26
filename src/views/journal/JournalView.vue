@@ -168,7 +168,8 @@ const editingEntry = ref<JournalEntry | null>(null)
 const entryForm = reactive({
   content: '',
   moodBefore: 5,
-  moodAfter: 5
+  moodAfter: 5,
+  date: new Date().toISOString().split('T')[0]
 })
 
 const validEntries = computed(() => {
@@ -216,6 +217,7 @@ const resetForm = () => {
   entryForm.content = ''
   entryForm.moodBefore = 5
   entryForm.moodAfter = 5
+  entryForm.date = new Date().toISOString().split('T')[0]
 }
 
 const saveDraft = () => {

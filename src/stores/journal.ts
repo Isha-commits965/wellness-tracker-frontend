@@ -82,15 +82,17 @@ export const useJournalStore = defineStore('journal', () => {
       isLoading.value = true;
       error.value = null;
       const response = await journalService.getJournalEntries(page, limit, search);
-      entries.value = response.data;
+      console.log('Journal entries in store:', response);
+      entries.value = response.items || [];
       pagination.value = {
-        page: response.page,
-        limit: response.limit,
-        total: response.total,
-        totalPages: response.totalPages
+        page: response.page || 1,
+        limit: response.limit || 10,
+        total: response.total || 0,
+        totalPages: response.totalPages || 1
       };
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch journal entries';
+      console.error('Error fetching journal entries:', err);
       throw err;
     } finally {
       isLoading.value = false;

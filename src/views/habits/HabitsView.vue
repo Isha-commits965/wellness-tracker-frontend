@@ -31,13 +31,35 @@
         color="success"
       />
       <StatsCard
-        title="Completion Rate"
+        title="Today's Completion"
         :value="`${Math.round(habitsStore.completionRate)}%`"
-        subtitle="Today"
+        :subtitle="`${habitsStore.completedHabitsToday.length} of ${habitsStore.activeHabitsCount} completed`"
         icon="svg"
         color="info"
       />
     </div>
+    
+    <!-- Completion Progress Bar -->
+    <BaseCard v-if="habitsStore.activeHabitsCount > 0">
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-medium text-gray-900">Today's Progress</h3>
+          <span class="text-sm font-semibold" :class="habitsStore.completionRate >= 100 ? 'text-green-600' : habitsStore.completionRate >= 50 ? 'text-blue-600' : 'text-gray-600'">
+            {{ Math.round(habitsStore.completionRate) }}%
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+          <div 
+            class="h-3 rounded-full transition-all duration-500 ease-out"
+            :class="habitsStore.completionRate >= 100 ? 'bg-green-500' : habitsStore.completionRate >= 50 ? 'bg-blue-500' : 'bg-gray-400'"
+            :style="{ width: `${habitsStore.completionRate}%` }"
+          ></div>
+        </div>
+        <p class="text-xs text-gray-500">
+          {{ habitsStore.completedHabitsToday.length }} out of {{ habitsStore.activeHabitsCount }} habits completed today
+        </p>
+      </div>
+    </BaseCard>
 
     <!-- Habits list -->
     <div class="space-y-4">
@@ -236,8 +258,11 @@ const validHabits = computed(() => {
 
 onMounted(async () => {
   try {
-    await habitsStore.fetchHabits()
-    await habitsStore.fetchStreaks()
+    await Promise.all([
+      habitsStore.fetchHabits(),
+      habitsStore.fetchCheckIns(),
+      habitsStore.fetchStreaks()
+    ])
   } catch (error) {
     console.error('Failed to load habits:', error)
   }

@@ -74,8 +74,24 @@ export const habitsService = {
     if (habitId) params.append('habit_id', habitId);
     if (date) params.append('date', date);
     
-    const response = await apiService.get<HabitCheckIn[]>(`/habits/check-ins/?${params.toString()}`);
-    return response.data;
+    const response = await apiService.get<any[]>(`/habits/check-ins/?${params.toString()}`);
+    console.log('Raw check-ins response:', response);
+    
+    // The response is already the array, not wrapped in .data
+    const checkInsArray = Array.isArray(response) ? response : [];
+    
+    // Map backend snake_case to frontend camelCase
+    const mappedCheckIns = checkInsArray.map((checkIn: any) => ({
+      id: checkIn.id,
+      habitId: checkIn.habit_id,
+      date: checkIn.date,
+      value: checkIn.value,
+      notes: checkIn.notes || '',
+      createdAt: checkIn.created_at
+    }));
+    
+    console.log('Mapped check-ins:', mappedCheckIns);
+    return mappedCheckIns;
   },
 
   async updateCheckIn(id: string, checkInData: Partial<HabitCheckIn>): Promise<HabitCheckIn> {

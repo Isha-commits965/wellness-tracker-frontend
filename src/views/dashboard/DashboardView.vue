@@ -52,7 +52,12 @@
       <!-- Quick check-in -->
       <BaseCard>
         <template #header>
-          <h3 class="text-lg font-semibold text-gray-900">Quick Check-in</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">Quick Check-in</h3>
+            <div v-if="activeHabits.length > 0" class="text-sm font-medium" :class="habitsStore.completionRate >= 50 ? 'text-green-600' : 'text-gray-500'">
+              {{ Math.round(habitsStore.completionRate) }}% Complete
+            </div>
+          </div>
         </template>
         
         <div class="space-y-4">
@@ -215,6 +220,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useHabitsStore } from '@/stores/habits'
 import { useMoodsStore } from '@/stores/moods'
+import { useJournalStore } from '@/stores/journal'
 import { useAnalyticsStore } from '@/stores/analytics'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -225,6 +231,7 @@ import CalendarWidget from '@/components/ui/CalendarWidget.vue'
 const authStore = useAuthStore()
 const habitsStore = useHabitsStore()
 const moodsStore = useMoodsStore()
+const journalStore = useJournalStore()
 const analyticsStore = useAnalyticsStore()
 
 const quickMood = ref({
@@ -273,11 +280,18 @@ const dashboardStats = computed(() => {
     }
   }
   
+  // Calculate journal entries this week
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  const journalEntriesThisWeek = journalStore.entries?.filter(entry => 
+    new Date(entry.createdAt) >= oneWeekAgo
+  ).length || 0
+  
   return {
     totalHabits: habitsStore.totalHabits || 0,
     currentStreak,
     averageMood: moodsStore.averageMood || 0,
-    journalEntriesThisWeek: 0 // TODO: Calculate from journal entries
+    journalEntriesThisWeek
   }
 })
 
@@ -290,7 +304,9 @@ onMounted(async () => {
   try {
     await Promise.all([
       habitsStore.fetchHabits(),
-      moodsStore.fetchMoodEntries()
+      habitsStore.fetchCheckIns(),
+      moodsStore.fetchMoodEntries(),
+      journalStore.fetchJournalEntries()
     ])
   } catch (error) {
     console.error('Failed to load dashboard data:', error)
