@@ -11,13 +11,15 @@ export const useGoalsStore = defineStore('goals', () => {
   const error = ref<string | null>(null);
 
   // Getters
-  const activeGoals = computed(() => goals.value.filter(goal => goal.status === 'in_progress'));
-  const completedGoals = computed(() => goals.value.filter(goal => goal.status === 'completed'));
-  const overdueGoals = computed(() => goals.value.filter(goal => goal.status === 'overdue'));
+  const activeGoals = computed(() => goals.value?.filter(goal => goal && goal.status === 'in_progress') || []);
+  const completedGoals = computed(() => goals.value?.filter(goal => goal && goal.status === 'completed') || []);
+  const overdueGoals = computed(() => goals.value?.filter(goal => goal && goal.status === 'overdue') || []);
 
   const goalsByCategory = computed(() => {
     const categoriesMap: { [key: string]: Goal[] } = {};
+    if (!goals.value) return categoriesMap;
     goals.value.forEach(goal => {
+      if (!goal) return;
       if (!categoriesMap[goal.category]) {
         categoriesMap[goal.category] = [];
       }
@@ -32,13 +34,15 @@ export const useGoalsStore = defineStore('goals', () => {
       medium: [],
       low: []
     };
+    if (!goals.value) return priorityMap;
     goals.value.forEach(goal => {
+      if (!goal) return;
       priorityMap[goal.priority].push(goal);
     });
     return priorityMap;
   });
 
-  const totalGoals = computed(() => goals.value.length);
+  const totalGoals = computed(() => goals.value?.length || 0);
   const completedGoalsCount = computed(() => completedGoals.value.length);
   const completionRate = computed(() => {
     if (totalGoals.value === 0) return 0;
@@ -46,8 +50,8 @@ export const useGoalsStore = defineStore('goals', () => {
   });
 
   const averageProgress = computed(() => {
-    if (activeGoals.value.length === 0) return 0;
-    const totalProgress = activeGoals.value.reduce((acc, goal) => acc + goal.progress, 0);
+    if (!activeGoals.value || activeGoals.value.length === 0) return 0;
+    const totalProgress = activeGoals.value.reduce((acc, goal) => acc + (goal?.progress || 0), 0);
     return Math.round(totalProgress / activeGoals.value.length);
   });
 
@@ -83,6 +87,7 @@ export const useGoalsStore = defineStore('goals', () => {
       isLoading.value = true;
       error.value = null;
       const newGoal = await goalsService.createGoal(goalData);
+      if (!goals.value) goals.value = [];
       goals.value.push(newGoal);
       return newGoal;
     } catch (err: any) {

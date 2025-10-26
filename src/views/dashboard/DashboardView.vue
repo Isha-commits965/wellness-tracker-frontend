@@ -70,7 +70,7 @@
           
           <div v-else class="space-y-3">
             <div
-              v-for="habit in activeHabits.slice(0, 3)"
+              v-for="habit in (activeHabits || []).filter(h => h != null).slice(0, 3)"
               :key="habit.id"
               class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
             >
@@ -236,10 +236,50 @@ const quickMood = ref({
 const isLoggingMood = ref(false)
 
 const user = computed(() => authStore.user)
-const dashboardStats = computed(() => analyticsStore.dashboardStats)
 const activeHabits = computed(() => habitsStore.activeHabits)
 const todayMood = computed(() => moodsStore.todayMood)
 const calendarData = computed(() => analyticsStore.monthlyCalendarData)
+
+// Calculate real dashboard stats from store data
+const dashboardStats = computed(() => {
+  // Calculate current streak based on mood entries
+  let currentStreak = 0
+  if (moodsStore.moodEntries && moodsStore.moodEntries.length > 0) {
+    const sortedEntries = [...moodsStore.moodEntries].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // Check if there's an entry today
+    const todayStr = today.toISOString().split('T')[0]
+    const hasToday = sortedEntries.some(e => e.date === todayStr)
+    
+    if (hasToday) {
+      currentStreak = 1
+      // Count consecutive days backwards
+      for (let i = 1; i < 365; i++) {
+        const checkDate = new Date(today)
+        checkDate.setDate(checkDate.getDate() - i)
+        const checkDateStr = checkDate.toISOString().split('T')[0]
+        
+        if (sortedEntries.some(e => e.date === checkDateStr)) {
+          currentStreak++
+        } else {
+          break
+        }
+      }
+    }
+  }
+  
+  return {
+    totalHabits: habitsStore.totalHabits || 0,
+    currentStreak,
+    averageMood: moodsStore.averageMood || 0,
+    journalEntriesThisWeek: 0 // TODO: Calculate from journal entries
+  }
+})
 
 const recentActivity = computed(() => {
   // This would be populated from various stores
@@ -250,9 +290,7 @@ onMounted(async () => {
   try {
     await Promise.all([
       habitsStore.fetchHabits(),
-      moodsStore.fetchMoodEntries(),
-      analyticsStore.fetchDashboardStats(),
-      analyticsStore.fetchCalendarData(new Date().getFullYear(), new Date().getMonth() + 1)
+      moodsStore.fetchMoodEntries()
     ])
   } catch (error) {
     console.error('Failed to load dashboard data:', error)

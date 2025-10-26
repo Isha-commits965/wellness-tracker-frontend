@@ -1,11 +1,10 @@
 <template>
   <div class="space-y-2">
-    <label v-if="label" class="block text-sm font-medium text-gray-700">
+    <label v-if="label" class="block text-sm font-medium" style="color: #f8f8f8;">
       {{ label }}
-      <span class="text-gray-500 ml-1">({{ value }}/10)</span>
     </label>
     
-    <div class="relative">
+    <div class="relative pt-8">
       <input
         :id="inputId"
         type="range"
@@ -19,31 +18,18 @@
         @change="handleChange"
       />
       
-      <!-- Value indicators -->
-      <div class="flex justify-between text-xs text-gray-500 mt-1">
-        <span>{{ min }}</span>
-        <span>{{ max }}</span>
-      </div>
-      
-      <!-- Current value indicator -->
+      <!-- Current value emoji indicator -->
       <div
         :style="{ left: `${((modelValue - min) / (max - min)) * 100}%` }"
-        class="absolute -top-8 transform -translate-x-1/2"
+        class="absolute -top-2 transform -translate-x-1/2"
       >
-        <div class="bg-primary-600 text-white text-xs px-2 py-1 rounded-full whitespace-nowrap">
-          {{ modelValue }}
-        </div>
+        <div class="text-3xl">{{ getMoodEmoji(modelValue) }}</div>
       </div>
-    </div>
-    
-    <!-- Mood emoji indicator -->
-    <div v-if="showEmoji" class="flex justify-center">
-      <span class="text-2xl">{{ getMoodEmoji(modelValue) }}</span>
     </div>
     
     <!-- Mood description -->
     <div v-if="showDescription" class="text-center">
-      <span class="text-sm text-gray-600">{{ getMoodDescription(modelValue) }}</span>
+      <span class="text-sm" style="color: #f8f8f8;">{{ getMoodDescription(modelValue) }}</span>
     </div>
   </div>
 </template>

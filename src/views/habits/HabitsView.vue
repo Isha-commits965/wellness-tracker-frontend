@@ -45,7 +45,7 @@
         <BaseLoading type="spinner" text="Loading habits..." />
       </div>
       
-      <div v-else-if="habitsStore.habits.length === 0" class="text-center py-12">
+      <div v-else-if="!habitsStore.habits || habitsStore.habits.length === 0" class="text-center py-12">
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
@@ -58,7 +58,7 @@
       
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="habit in habitsStore.habits"
+          v-for="habit in validHabits"
           :key="habit.id"
           class="card hover:shadow-md transition-shadow duration-200"
         >
@@ -202,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useHabitsStore } from '@/stores/habits'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -229,6 +229,10 @@ const habitForm = reactive({
 })
 
 const errors = ref<{ [key: string]: string }>({})
+
+const validHabits = computed(() => {
+  return habitsStore.habits?.filter(habit => habit != null) || []
+})
 
 onMounted(async () => {
   try {

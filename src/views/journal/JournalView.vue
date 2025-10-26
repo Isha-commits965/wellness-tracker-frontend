@@ -33,7 +33,7 @@
       
       <div v-else class="space-y-4">
         <div
-          v-for="entry in journalStore.entries"
+          v-for="entry in validEntries"
           :key="entry.id"
           class="card hover:shadow-md transition-shadow duration-200 cursor-pointer"
           @click="viewEntry(entry)"
@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useJournalStore } from '@/stores/journal'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -169,6 +169,10 @@ const entryForm = reactive({
   content: '',
   moodBefore: 5,
   moodAfter: 5
+})
+
+const validEntries = computed(() => {
+  return journalStore.entries?.filter(entry => entry != null) || []
 })
 
 onMounted(async () => {

@@ -12,10 +12,12 @@ export const useHabitsStore = defineStore('habits', () => {
   const error = ref<string | null>(null);
 
   // Getters
-  const activeHabits = computed(() => habits.value.filter(habit => habit.isActive));
+  const activeHabits = computed(() => habits.value?.filter(habit => habit && habit.isActive) || []);
   const habitsByCategory = computed(() => {
     const categories: { [key: string]: Habit[] } = {};
+    if (!habits.value) return categories;
     habits.value.forEach(habit => {
+      if (!habit) return;
       if (!categories[habit.category]) {
         categories[habit.category] = [];
       }
@@ -24,22 +26,22 @@ export const useHabitsStore = defineStore('habits', () => {
     return categories;
   });
 
-  const totalHabits = computed(() => habits.value.length);
-  const activeHabitsCount = computed(() => activeHabits.value.length);
+  const totalHabits = computed(() => habits.value?.length || 0);
+  const activeHabitsCount = computed(() => activeHabits.value?.length || 0);
 
   const todayCheckIns = computed(() => {
     const today = new Date().toISOString().split('T')[0];
-    return checkIns.value.filter(checkIn => checkIn.date === today);
+    return checkIns.value?.filter(checkIn => checkIn.date === today) || [];
   });
 
   const completedHabitsToday = computed(() => {
-    return activeHabits.value.filter(habit => 
+    return activeHabits.value?.filter(habit => 
       todayCheckIns.value.some(checkIn => checkIn.habitId === habit.id)
-    );
+    ) || [];
   });
 
   const completionRate = computed(() => {
-    if (activeHabits.value.length === 0) return 0;
+    if (!activeHabits.value || activeHabits.value.length === 0) return 0;
     return (completedHabitsToday.value.length / activeHabits.value.length) * 100;
   });
 
@@ -49,9 +51,12 @@ export const useHabitsStore = defineStore('habits', () => {
       isLoading.value = true;
       error.value = null;
       const habitsData = await habitsService.getHabits();
+      console.log('Setting habits in store:', habitsData);
       habits.value = habitsData;
+      console.log('Habits value after setting:', habits.value);
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch habits';
+      console.error('Error fetching habits:', err);
       throw err;
     } finally {
       isLoading.value = false;
@@ -63,6 +68,7 @@ export const useHabitsStore = defineStore('habits', () => {
       isLoading.value = true;
       error.value = null;
       const newHabit = await habitsService.createHabit(habitData);
+      if (!habits.value) habits.value = [];
       habits.value.push(newHabit);
       return newHabit;
     } catch (err: any) {
@@ -125,6 +131,7 @@ export const useHabitsStore = defineStore('habits', () => {
       isLoading.value = true;
       error.value = null;
       const newCheckIn = await habitsService.createCheckIn(checkInData);
+      if (!checkIns.value) checkIns.value = [];
       checkIns.value.push(newCheckIn);
       return newCheckIn;
     } catch (err: any) {
@@ -197,12 +204,12 @@ export const useHabitsStore = defineStore('habits', () => {
   }
 
   function getHabitStreak(habitId: string): HabitStreak | undefined {
-    return streaks.value.find(streak => streak.habitId === habitId);
+    return streaks.value?.find(streak => streak.habitId === habitId);
   }
 
   function isHabitCompletedToday(habitId: string): boolean {
     const today = new Date().toISOString().split('T')[0];
-    return todayCheckIns.value.some(checkIn => checkIn.habitId === habitId);
+    return todayCheckIns.value?.some(checkIn => checkIn.habitId === habitId) || false;
   }
 
   function clearError() {

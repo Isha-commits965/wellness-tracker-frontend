@@ -3,8 +3,25 @@ import type { Habit, HabitCheckIn, HabitStreak, PaginatedResponse } from '@/type
 
 export const habitsService = {
   async getHabits(): Promise<Habit[]> {
-    const response = await apiService.get<Habit[]>('/habits/');
-    return response.data;
+    const response = await apiService.get<any[]>('/habits/');
+    console.log('Raw habits response:', response);
+    // The response is already the array, not wrapped in .data
+    const habitsArray = Array.isArray(response) ? response : [];
+    // Map backend snake_case to frontend camelCase
+    const mappedHabits = habitsArray.map((habit: any) => ({
+      id: habit.id,
+      name: habit.name,
+      description: habit.description || '',
+      category: habit.category,
+      frequency: habit.target_frequency || habit.frequency || 'daily',
+      targetValue: habit.target_value || 1,
+      unit: habit.unit || 'times',
+      isActive: habit.is_active !== undefined ? habit.is_active : true,
+      createdAt: habit.created_at || habit.createdAt,
+      updatedAt: habit.updated_at || habit.updatedAt
+    }));
+    console.log('Mapped habits:', mappedHabits);
+    return mappedHabits;
   },
 
   async getHabit(id: string): Promise<Habit> {
@@ -33,8 +50,23 @@ export const habitsService = {
 
   // Check-ins
   async createCheckIn(checkInData: Omit<HabitCheckIn, 'id' | 'createdAt'>): Promise<HabitCheckIn> {
-    const response = await apiService.post<HabitCheckIn>('/habits/check-ins/', checkInData);
-    return response.data;
+    // Map frontend camelCase to backend snake_case
+    const backendPayload = {
+      habit_id: checkInData.habitId,
+      date: checkInData.date,
+      value: checkInData.value || 1,
+      notes: checkInData.notes || ''
+    };
+    const response = await apiService.post<any>('/habits/check-ins/', backendPayload);
+    // Map response back to frontend format
+    return {
+      id: response.id,
+      habitId: response.habit_id,
+      date: response.date,
+      value: response.value,
+      notes: response.notes || '',
+      createdAt: response.created_at
+    };
   },
 
   async getCheckIns(habitId?: string, date?: string): Promise<HabitCheckIn[]> {

@@ -13,24 +13,24 @@ export const useMoodsStore = defineStore('moods', () => {
   // Getters
   const todayMood = computed(() => {
     const today = new Date().toISOString().split('T')[0];
-    return moodEntries.value.find(entry => entry.date === today);
+    return moodEntries.value?.find(entry => entry.date === today);
   });
 
   const averageMood = computed(() => {
-    if (moodEntries.value.length === 0) return 0;
-    const sum = moodEntries.value.reduce((acc, entry) => acc + entry.mood, 0);
+    if (!moodEntries.value || moodEntries.value.length === 0) return 0;
+    const sum = moodEntries.value.reduce((acc, entry) => acc + (entry?.mood || 0), 0);
     return Math.round((sum / moodEntries.value.length) * 10) / 10;
   });
 
   const averageEnergy = computed(() => {
-    if (moodEntries.value.length === 0) return 0;
-    const sum = moodEntries.value.reduce((acc, entry) => acc + entry.energy, 0);
+    if (!moodEntries.value || moodEntries.value.length === 0) return 0;
+    const sum = moodEntries.value.reduce((acc, entry) => acc + (entry?.energy || 0), 0);
     return Math.round((sum / moodEntries.value.length) * 10) / 10;
   });
 
   const averageStress = computed(() => {
-    if (moodEntries.value.length === 0) return 0;
-    const sum = moodEntries.value.reduce((acc, entry) => acc + entry.stress, 0);
+    if (!moodEntries.value || moodEntries.value.length === 0) return 0;
+    const sum = moodEntries.value.reduce((acc, entry) => acc + (entry?.stress || 0), 0);
     return Math.round((sum / moodEntries.value.length) * 10) / 10;
   });
 
@@ -72,6 +72,7 @@ export const useMoodsStore = defineStore('moods', () => {
       isLoading.value = true;
       error.value = null;
       const newEntry = await moodsService.createMoodEntry(moodData);
+      if (!moodEntries.value) moodEntries.value = [];
       moodEntries.value.push(newEntry);
       return newEntry;
     } catch (err: any) {
@@ -145,6 +146,7 @@ export const useMoodsStore = defineStore('moods', () => {
   async function logQuickMood(mood: number, energy: number, stress: number, notes?: string) {
     try {
       const entry = await moodsService.logQuickMood(mood, energy, stress, notes);
+      if (!moodEntries.value) moodEntries.value = [];
       moodEntries.value.push(entry);
       return entry;
     } catch (err: any) {

@@ -45,6 +45,8 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   });
 
   const monthlyCalendarData = computed(() => {
+    if (!calendarData.value || !Array.isArray(calendarData.value)) return [];
+    
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;

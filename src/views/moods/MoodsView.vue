@@ -16,52 +16,59 @@
 
     <!-- Today's mood -->
     <div v-if="moodsStore.todayMood" class="card">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Today's Mood</h3>
+      <h3 class="text-lg font-semibold mb-6" style="color: #f8f8f8;">Today's Mood Summary</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="text-center">
-          <div class="text-3xl mb-2">{{ moodsStore.getMoodEmoji(moodsStore.todayMood.mood) }}</div>
-          <p class="text-sm text-gray-500">Mood</p>
-          <p class="text-xl font-semibold" :class="moodsStore.getMoodColor(moodsStore.todayMood.mood)">
+        <div class="text-center p-4 bg-white bg-opacity-10 rounded-lg">
+          <p class="text-sm font-medium mb-2" style="color: #f8f8f8;">😊 How are you feeling mood-wise?</p>
+          <div class="text-4xl mb-2">{{ moodsStore.getMoodEmoji(moodsStore.todayMood.mood) }}</div>
+          <p class="text-xl font-semibold" style="color: #f8f8f8;">
             {{ moodsStore.todayMood.mood }}/10
           </p>
         </div>
-        <div class="text-center">
-          <div class="text-3xl mb-2">⚡</div>
-          <p class="text-sm text-gray-500">Energy</p>
-          <p class="text-xl font-semibold text-blue-600">{{ moodsStore.todayMood.energy }}/10</p>
+        <div class="text-center p-4 bg-white bg-opacity-10 rounded-lg">
+          <p class="text-sm font-medium mb-2" style="color: #f8f8f8;">⚡ How energetic are you?</p>
+          <div class="text-4xl mb-2">⚡</div>
+          <p class="text-xl font-semibold" style="color: #f8f8f8;">{{ moodsStore.todayMood.energy }}/10</p>
         </div>
-        <div class="text-center">
-          <div class="text-3xl mb-2">😌</div>
-          <p class="text-sm text-gray-500">Stress</p>
-          <p class="text-xl font-semibold text-orange-600">{{ moodsStore.todayMood.stress }}/10</p>
+        <div class="text-center p-4 bg-white bg-opacity-10 rounded-lg">
+          <p class="text-sm font-medium mb-2" style="color: #f8f8f8;">😰 How stressed do you feel?</p>
+          <div class="text-4xl mb-2">😰</div>
+          <p class="text-xl font-semibold" style="color: #f8f8f8;">{{ moodsStore.todayMood.stress }}/10</p>
         </div>
       </div>
-      <div v-if="moodsStore.todayMood.notes" class="mt-4 p-3 bg-gray-50 rounded-lg">
-        <p class="text-sm text-gray-700">{{ moodsStore.todayMood.notes }}</p>
+      <div v-if="moodsStore.todayMood.notes" class="mt-4 p-3 bg-white bg-opacity-10 rounded-lg">
+        <p class="text-sm font-medium mb-1" style="color: #f8f8f8;">Notes:</p>
+        <p class="text-sm" style="color: #e0e0e0;">{{ moodsStore.todayMood.notes }}</p>
       </div>
     </div>
 
     <!-- Quick mood logging -->
     <div v-else class="card">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">How are you feeling today?</h3>
-      <div class="space-y-6">
-        <MoodSlider
-          v-model="quickMood.mood"
-          label="Mood"
-          type="mood"
-        />
+      <h3 class="text-lg font-semibold mb-6" style="color: #f8f8f8;">How are you feeling today?</h3>
+      <div class="space-y-8">
+        <div>
+          <h4 class="text-sm font-medium mb-3" style="color: #f8f8f8;">😊 How are you feeling mood-wise?</h4>
+          <MoodSlider
+            v-model="quickMood.mood"
+            type="mood"
+          />
+        </div>
         
-        <MoodSlider
-          v-model="quickMood.energy"
-          label="Energy Level"
-          type="energy"
-        />
+        <div>
+          <h4 class="text-sm font-medium mb-3" style="color: #f8f8f8;">⚡ How energetic are you?</h4>
+          <MoodSlider
+            v-model="quickMood.energy"
+            type="energy"
+          />
+        </div>
         
-        <MoodSlider
-          v-model="quickMood.stress"
-          label="Stress Level"
-          type="stress"
-        />
+        <div>
+          <h4 class="text-sm font-medium mb-3" style="color: #f8f8f8;">😰 How stressed do you feel?</h4>
+          <MoodSlider
+            v-model="quickMood.stress"
+            type="stress"
+          />
+        </div>
         
         <div>
           <label class="label">Notes (Optional)</label>
@@ -91,7 +98,7 @@
         <BaseLoading type="spinner" text="Loading mood history..." />
       </div>
       
-      <div v-else-if="moodsStore.moodEntries.length === 0" class="text-center py-8">
+      <div v-else-if="!moodsStore.moodEntries || moodsStore.moodEntries.length === 0" class="text-center py-8">
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
@@ -101,7 +108,7 @@
       
       <div v-else class="space-y-3">
         <div
-          v-for="entry in moodsStore.moodEntries.slice(0, 10)"
+          v-for="entry in validMoodEntries.slice(0, 10)"
           :key="entry.id"
           class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
         >
@@ -198,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useMoodsStore } from '@/stores/moods'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -227,6 +234,10 @@ const modalMood = reactive({
   date: new Date().toISOString().split('T')[0]
 })
 
+const validMoodEntries = computed(() => {
+  return moodsStore.moodEntries?.filter(entry => entry != null) || []
+})
+
 onMounted(async () => {
   try {
     await moodsStore.fetchMoodEntries()
@@ -238,13 +249,28 @@ onMounted(async () => {
 const logMood = async () => {
   try {
     isLoggingMood.value = true
-    await moodsStore.createMoodEntry({
-      mood: quickMood.mood,
-      energy: quickMood.energy,
-      stress: quickMood.stress,
-      notes: quickMood.notes,
-      date: new Date().toISOString().split('T')[0]
-    })
+    const today = new Date().toISOString().split('T')[0]
+    const existingEntry = moodsStore.todayMood
+    
+    if (existingEntry) {
+      // Update existing entry
+      await moodsStore.updateMoodEntry(existingEntry.id, {
+        mood: quickMood.mood,
+        energy: quickMood.energy,
+        stress: quickMood.stress,
+        notes: quickMood.notes,
+        date: today
+      })
+    } else {
+      // Create new entry
+      await moodsStore.createMoodEntry({
+        mood: quickMood.mood,
+        energy: quickMood.energy,
+        stress: quickMood.stress,
+        notes: quickMood.notes,
+        date: today
+      })
+    }
     
     // Reset form
     quickMood.mood = 5

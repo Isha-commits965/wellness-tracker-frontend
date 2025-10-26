@@ -66,6 +66,7 @@ export const useJournalStore = defineStore('journal', () => {
       isLoading.value = true;
       error.value = null;
       const newEntry = await journalService.createJournalEntry(entryData);
+      if (!entries.value) entries.value = [];
       entries.value.unshift(newEntry);
       return newEntry;
     } catch (err: any) {
