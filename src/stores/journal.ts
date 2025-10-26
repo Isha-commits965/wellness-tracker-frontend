@@ -83,7 +83,7 @@ export const useJournalStore = defineStore('journal', () => {
       error.value = null;
       const response = await journalService.getJournalEntries(page, limit, search);
       console.log('Journal entries in store:', response);
-      entries.value = response.items || [];
+          entries.value = response.data || [];
       pagination.value = {
         page: response.page || 1,
         limit: response.limit || 10,
@@ -173,6 +173,20 @@ export const useJournalStore = defineStore('journal', () => {
     }
   }
 
+  async function sendConversationMessage(entryId: string, message: string) {
+    try {
+      isLoading.value = true;
+      error.value = null;
+      const response = await journalService.sendConversationMessage(entryId, message);
+      return response;
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to send message';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   async function searchEntries(query: string, page: number = 1, limit: number = 10) {
     try {
       isLoading.value = true;
@@ -237,6 +251,7 @@ export const useJournalStore = defineStore('journal', () => {
     updateJournalEntry,
     deleteJournalEntry,
     regenerateAIResponse,
+    sendConversationMessage,
     searchEntries,
     saveDraft,
     getDraft,

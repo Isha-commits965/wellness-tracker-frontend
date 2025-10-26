@@ -82,7 +82,10 @@ export interface JournalEntry {
   content: string;
   moodBefore: number;
   moodAfter: number;
+  date: string;
   aiResponse?: string;
+  suggestions?: string[];
+  userId: string;
   createdAt: string;
   updatedAt: string;
 }
